@@ -28,7 +28,7 @@
                          </a>
                      </li>
                  </ul>
-                 <div class="small text-center text-muted fst-italic">Copyright &copy; Your Website 2023</div>
+                 <div class="small text-center text-muted fst-italic">Copyright &copy; <?php echo date('Y').' ' . config('App')->appName; ?></div>
              </div>
          </div>
      </div>
