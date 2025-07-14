@@ -6,6 +6,13 @@ use CodeIgniter\Config\BaseConfig;
 
 class App extends BaseConfig
 {
+    public string $appName;
+
+    public function __construct()
+    {
+        // Assign value from env or default
+        $this->appName = env('app.name', 'My CodeIgniter App');
+    }
     /**
      * --------------------------------------------------------------------------
      * Base Site URL
