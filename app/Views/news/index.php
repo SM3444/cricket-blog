@@ -3,35 +3,57 @@
 
 <h1 class="mb-4">Latest Cricket News</h1>
 
-<?php if (empty($articles)): ?>
-    <div class="alert alert-warning">No news available at the moment.</div>
-<?php else: ?>
-    <?php foreach ($articles as $news): ?>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title"><?= esc($news['title']) ?></h5>
-                <?php if ($news['image']): ?>
-                    <img src="<?= esc($news['image']) ?>" class="img-fluid mb-2" style="max-height: 300px;" />
-                <?php endif; ?>
-                <p class="card-text"><?= esc($news['description']) ?></p>
-                <a href="<?= esc($news['url']) ?>" target="_blank" class="btn btn-primary">Read More</a>
-                <p class="text-muted mt-2"><small>Published at: <?= date('d M Y, h:i A', strtotime($news['published_at'])) ?></small></p>
-            </div>
-        </div>
-    <?php endforeach; ?>
-<?php endif; ?>
+<div id="news-container"></div>
 
-<!-- Pagination -->
-<?php if ($totalPages > 1): ?>
-    <nav>
-        <ul class="pagination justify-content-center">
-            <?php for ($i = 1; $i <= $totalPages && $i <= 10; $i++): ?>
-                <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                    <a class="page-link" href="<?= site_url('?page=' . $i) ?>"><?= $i ?></a>
-                </li>
-            <?php endfor; ?>
-        </ul>
-    </nav>
-<?php endif; ?>
+<div class="text-center mt-4">
+    <button id="loadMoreBtn" class="btn btn-primary">Load More</button>
+    <div id="loader" class="mt-2 d-none">Loading...</div>
+</div>
+
+<script>
+    let currentPage = 1;
+
+    function loadNews(page) {
+        document.getElementById('loader').classList.remove('d-none');
+        fetch(`<?= site_url('news/ajax?page=') ?>` + page)
+            .then(response => response.json())
+            .then(data => {
+                console.log('data',data);
+                const container = document.getElementById('news-container');
+                if (data.length === 0) {
+                    document.getElementById('loadMoreBtn').disabled = true;
+                    document.getElementById('loadMoreBtn').innerText = "No More News";
+                }
+                data.forEach(news => {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-3';
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${news.title}</h5>
+                            ${news.image ? `<img src="${news.image}" class="img-fluid mb-2" style="max-height: 300px;" />` : ''}
+                            <p class="card-text">${news.description || ''}</p>
+                            <a href="${news.url}" target="_blank" class="btn btn-primary">Read More</a>
+                            <p class="text-muted mt-2"><small>Published at: ${new Date(news.published_at).toLocaleString()}</small></p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                document.getElementById('loader').classList.add('d-none');
+            })
+            .catch(error => {
+                alert('Error loading news.');
+                console.error(error);
+                document.getElementById('loader').classList.add('d-none');
+            });
+    }
+
+    document.getElementById('loadMoreBtn').addEventListener('click', function() {
+        currentPage++;
+        loadNews(currentPage);
+    });
+
+    // Load first page on start
+    loadNews(currentPage);
+</script>
 
 <?= $this->endSection() ?>
